@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPod-Style Card Carousel</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="carousel-container">
+        <div class="carousel">
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+1" alt="Card 1"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+2" alt="Card 2"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+3" alt="Card 3"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+4" alt="Card 4"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+5" alt="Card 5"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+6" alt="Card 6"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+7" alt="Card 7"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+8" alt="Card 8"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+9" alt="Card 9"></div>
+            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+10" alt="Card 10"></div>
+        </div>
+    </div>
+
+    <!-- New image section at the bottom -->
+    <div class="image-container">
+        <img src="https://via.placeholder.com/1000x400?text=Bottom+Image" alt="Bottom Image">
+    </div>
+
+    <script>
+        const carousel = document.querySelector('.carousel');
+        const cards = document.querySelectorAll('.card');
+        let activeIndex = 1;  // Start with the middle card as active
+
+        function updateCarousel() {
+            cards.forEach((card, index) => {
+                card.classList.remove('active', 'active-left', 'active-right');
+                if (index === activeIndex) {
+                    card.classList.add('active');
+                } else if (index === activeIndex - 1) {
+                    card.classList.add('active-left');
+                } else if (index === activeIndex + 1) {
+                    card.classList.add('active-right');
+                }
+            });
+
+            const offset = -(activeIndex * (200 + 40) - (window.innerWidth / 2 - 120));
+            carousel.style.transform = `translateX(${offset}px)`;
+        }
+
+        window.addEventListener('scroll', () => {
+            const scrollPosition = window.scrollY;
+            const maxScroll = document.body.scrollHeight - window.innerHeight;
+            const scrollPercentage = scrollPosition / maxScroll;
+            activeIndex = Math.floor(scrollPercentage * cards.length);
+            if (activeIndex >= cards.length) activeIndex = cards.length - 1;
+            if (activeIndex < 0) activeIndex = 0;
+            updateCarousel();
+        });
+
+        updateCarousel();
+    </script>
+
+</body>
+</html>
