@@ -3,63 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPod-Style Card Carousel</title>
+    <title>Looping Carousel with Center Alignment</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
     <div class="carousel-container">
         <div class="carousel">
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+1" alt="Card 1"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+2" alt="Card 2"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+3" alt="Card 3"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+4" alt="Card 4"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+5" alt="Card 5"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+6" alt="Card 6"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+7" alt="Card 7"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+8" alt="Card 8"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+9" alt="Card 9"></div>
-            <div class="card"><img src="https://via.placeholder.com/200x300?text=Card+10" alt="Card 10"></div>
+            <!-- Original Images -->
+            <div class="card"><img src="images/1.png" alt="Image 1"></div>
+            <div class="card"><img src="images/2.png" alt="Image 2"></div>
+            <div class="card"><img src="images/3.png" alt="Image 3"></div>
+            <div class="card"><img src="images/4.png" alt="Image 4"></div>
+            <div class="card"><img src="images/5.png" alt="Image 5"></div>
+            <div class="card"><img src="images/6.png" alt="Image 6"></div>
+            <div class="card"><img src="images/7.png" alt="Image 7"></div>
+            <div class="card"><img src="images/8.png" alt="Image 8"></div>
+            <div class="card"><img src="images/9.png" alt="Image 9"></div>
+            <div class="card"><img src="images/10.png" alt="Image 10"></div>
+
+            <!-- Duplicate the images to create the loop -->
+            <div class="card"><img src="images/1.png" alt="Image 1"></div>
+            <div class="card"><img src="images/2.png" alt="Image 2"></div>
+            <div class="card"><img src="images/3.png" alt="Image 3"></div>
+            <div class="card"><img src="images/4.png" alt="Image 4"></div>
+            <div class="card"><img src="images/5.png" alt="Image 5"></div>
+            <div class="card"><img src="images/6.png" alt="Image 6"></div>
+            <div class="card"><img src="images/7.png" alt="Image 7"></div>
+            <div class="card"><img src="images/8.png" alt="Image 8"></div>
+            <div class="card"><img src="images/9.png" alt="Image 9"></div>
+            <div class="card"><img src="images/10.png" alt="Image 10"></div>
         </div>
     </div>
 
     <!-- New image section at the bottom -->
     <div class="image-container">
-        <img src="https://via.placeholder.com/1000x400?text=Bottom+Image" alt="Bottom Image">
+        <img src="images/ipod.png" alt="Bottom Image">
     </div>
 
     <script>
         const carousel = document.querySelector('.carousel');
         const cards = document.querySelectorAll('.card');
-        let activeIndex = 1;  // Start with the middle card as active
+        let scrollPosition = 0;
+        let isScrolling;
+        let cardWidth = cards[0].offsetWidth + 20; // Card width + margin
 
-        function updateCarousel() {
+        // Disable vertical scroll and listen to horizontal wheel movement
+        window.addEventListener('wheel', (event) => {
+            event.preventDefault(); // Prevent default vertical scrolling behavior
+
+            scrollPosition -= event.deltaY; // Scroll horizontally based on wheel movement
+            updateCarousel(scrollPosition);
+
+            // Clear the timeout if it's already set
+            window.clearTimeout(isScrolling);
+
+            // Set a timeout to run the snap function after scrolling ends
+            isScrolling = setTimeout(() => {
+                snapToClosestCard();
+            }, 150);  // Adjust this value as needed
+        }, { passive: false });
+
+        // Function to update card positions based on the scroll position
+        function updateCarousel(scrollPosition) {
+            const maxTranslateX = -(carousel.scrollWidth / 2);
+
+            carousel.style.transform = `translateX(${scrollPosition}px)`;
+
+            // Calculate which card is in the center
+            const center = window.innerWidth / 2;
             cards.forEach((card, index) => {
-                card.classList.remove('active', 'active-left', 'active-right');
-                if (index === activeIndex) {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + cardRect.width / 2;
+                const distanceFromCenter = Math.abs(center - cardCenter);
+
+                // Pop-out effect for the center card
+                if (distanceFromCenter < cardRect.width / 2) {
                     card.classList.add('active');
-                } else if (index === activeIndex - 1) {
-                    card.classList.add('active-left');
-                } else if (index === activeIndex + 1) {
-                    card.classList.add('active-right');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+        }
+
+        //  snap closest card to the center
+        function snapToClosestCard() {
+            const center = window.innerWidth / 2;
+            let closestCard = null;
+            let minDistance = Infinity;
+
+            cards.forEach((card) => {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + cardRect.width / 2;
+                const distanceFromCenter = Math.abs(center - cardCenter);
+
+                if (distanceFromCenter < minDistance) {
+                    closestCard = card;
+                    minDistance = distanceFromCenter;
                 }
             });
 
-            const offset = -(activeIndex * (200 + 40) - (window.innerWidth / 2 - 120));
-            carousel.style.transform = `translateX(${offset}px)`;
+            // offset to center the closest card
+            if (closestCard) {
+                const closestCardRect = closestCard.getBoundingClientRect();
+                const offset = (closestCardRect.left + closestCardRect.width / 2) - center;
+                scrollPosition -= offset;
+                updateCarousel(scrollPosition);
+            }
         }
-
-        window.addEventListener('scroll', () => {
-            const scrollPosition = window.scrollY;
-            const maxScroll = document.body.scrollHeight - window.innerHeight;
-            const scrollPercentage = scrollPosition / maxScroll;
-            activeIndex = Math.floor(scrollPercentage * cards.length);
-            if (activeIndex >= cards.length) activeIndex = cards.length - 1;
-            if (activeIndex < 0) activeIndex = 0;
-            updateCarousel();
-        });
-
-        updateCarousel();
     </script>
 
 </body>
